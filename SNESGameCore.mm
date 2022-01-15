@@ -156,7 +156,12 @@ NSString *SNESEmulatorKeys[] = { @"Up", @"Down", @"Left", @"Right", @"A", @"B", 
 
 - (void)executeFrame
 {
-    IPPU.RenderThisFrame = !self.shouldSkipFrame;
+    [self executeFrameSkippingFrame:NO];
+}
+
+- (void)executeFrameSkippingFrame:(BOOL)skip
+{
+    IPPU.RenderThisFrame = !skip;
     S9xMainLoop();
 }
 
