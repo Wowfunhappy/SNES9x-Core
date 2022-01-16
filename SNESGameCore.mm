@@ -162,6 +162,7 @@ NSString *SNESEmulatorKeys[] = { @"Up", @"Down", @"Left", @"Right", @"A", @"B", 
 - (void)executeFrameSkippingFrame:(BOOL)skip
 {
     IPPU.RenderThisFrame = !skip;
+    S9xUpdateDynamicRate([[self ringBufferAtIndex:0] usedBytes], [[self ringBufferAtIndex:0] length]);
     S9xMainLoop();
 }
 
@@ -186,6 +187,9 @@ NSString *SNESEmulatorKeys[] = { @"Up", @"Down", @"Left", @"Right", @"A", @"B", 
     Settings.DontSaveOopsSnapshot   = true;
     Settings.NoPatch                = true;
     Settings.SuperFXClockMultiplier = 100;
+    
+    Settings.DynamicRateControl     = true;
+    Settings.DynamicRateLimit       = 5;
 
     if(videoBuffer) free(videoBuffer);
 
@@ -813,7 +817,10 @@ static void FinalizeSamplesAudioCallback(void *context)
 
 - (NSTimeInterval)frameInterval
 {
-    return Settings.PAL ? 50 : 60.098;
+    //Wowfunhappy: Real NTSC is 60.098, but that causes stuttering.
+    //This is why we have DynamicRate audio!
+
+    return Settings.PAL ? 50 : 60;
 }
 
 - (NSUInteger)channelCount
