@@ -45,6 +45,9 @@
 #define SAMPLERATE      32040
 #define SIZESOUNDBUFFER SAMPLERATE / 50 * 4
 
+double pal_fps = 50;
+double ntsc_fps = 60.098;
+
 #ifdef DEBUG
     #error "Cores should not be compiled in DEBUG! Follow the guide https://github.com/OpenEmu/OpenEmu/wiki/Compiling-From-Source-Guide"
 #endif
@@ -197,7 +200,17 @@ NSString *SNESEmulatorKeys[] = { @"Up", @"Down", @"Left", @"Right", @"A", @"B", 
 
     GFX.Pitch = 512 * 2;
     GFX.Screen = (short unsigned int *)videoBuffer;
-
+    
+    CGDirectDisplayID displays;
+    uint32_t matchingDisplayCount = 1;
+    CGGetDisplaysWithRect([[NSApp mainWindow]frame], 1, &displays, &matchingDisplayCount);
+    double monitorRefreshRate = CGDisplayModeGetRefreshRate(CGDisplayCopyDisplayMode(displays));
+    if (fabs(monitorRefreshRate - ntsc_fps) < 1) {
+        ntsc_fps = monitorRefreshRate;
+    } else if (fabs(monitorRefreshRate - pal_fps) < 1) {
+        pal_fps = monitorRefreshRate;
+    }
+    
     S9xUnmapAllControls();
 
     [self mapButtons];
@@ -817,10 +830,7 @@ static void FinalizeSamplesAudioCallback(void *context)
 
 - (NSTimeInterval)frameInterval
 {
-    //Wowfunhappy: Real NTSC is 60.098, but that causes stuttering.
-    //This is why we have DynamicRate audio!
-
-    return Settings.PAL ? 50 : 60;
+    return Settings.PAL ? pal_fps : ntsc_fps;
 }
 
 - (NSUInteger)channelCount
