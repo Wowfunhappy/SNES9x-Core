@@ -140,6 +140,10 @@ NSString *SNESEmulatorKeys[] = { @"Up", @"Down", @"Left", @"Right", @"A", @"B", 
         {
             s9xcommand_t cmd = S9xGetCommandT([[playerString stringByAppendingString:SNESEmulatorKeys[idx]] UTF8String]);
             S9xMapButton(playerMask | idx, cmd, false);
+            
+            //Wowfunhappy - Speculative fix for sticky L+R buttons.
+            S9xReportButton((player << 16) | 8, false);
+            S9xReportButton((player << 16) | 9, false);
         }
     }
 
